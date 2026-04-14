@@ -37,6 +37,24 @@ node ./packages/codex/src/index.mjs
 node ./packages/claude/src/index.mjs
 ```
 
+## 发布
+
+发布到 npm 的包是：
+
+- `@archkk/acp-codex`
+- `@archkk/acp-claude`
+
+在仓库根目录执行：
+
+```bash
+npm publish --workspace packages/codex --access public
+npm publish --workspace packages/claude --access public
+```
+
+这两个命令会自动触发各自 package 的 `prepack`，把共享代码打进发布产物，不需要手工先跑 build。
+
+如果当前版本已经发布过，先改版本号，再执行发布。
+
 ## 在 MisterMorph 里接入
 
 如果这个仓库和 MisterMorph 分开放，MisterMorph 里的 ACP profile 直接指向这里的入口文件。
