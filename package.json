@@ -1,0 +1,14 @@
+{
+  "name": "mistermorph-acp-adapters",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test packages/codex/test/*.test.mjs packages/claude/test/*.test.mjs"
+  }
+}
