@@ -1,5 +1,7 @@
 {
   "name": "mistermorph-acp-adapters",
+  "description": "ACP adapters extracted from MisterMorph",
+  "license": "Apache-2.0",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -9,6 +11,12 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test packages/codex/test/*.test.mjs packages/claude/test/*.test.mjs"
+    "build:codex": "node ./tools/build-package.mjs codex",
+    "build:claude": "node ./tools/build-package.mjs claude",
+    "test": "node --test packages/codex/test/*.test.mjs packages/claude/test/*.test.mjs",
+    "test:codex": "node --test packages/codex/test/*.test.mjs",
+    "test:claude": "node --test packages/claude/test/*.test.mjs",
+    "run:codex": "node ./packages/codex/src/index.mjs",
+    "run:claude": "node ./packages/claude/src/index.mjs"
   }
 }

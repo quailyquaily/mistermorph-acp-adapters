@@ -1,40 +1,94 @@
 # MisterMorph ACP Adapters
 
-这个目录先作为 ACP adapter 迁出准备区。
+这个仓库放 MisterMorph 拆出来的 ACP adapter。
 
-当前只做三件事：
-
-- 固定新的仓库边界
-- 先分出 `shared` / `codex` / `claude` 三个 package
-- 给后续代码迁移留出明确入口
-
-## 目标边界
+当前范围很小：
 
 - `packages/shared`
-  - 放 ACP `stdio` server 基座
-  - 放 JSON-RPC 公共处理
-  - 放通用的文本提取、参数校验、会话辅助函数
+  - ACP `stdio` server 基座
+  - JSON-RPC 公共处理
+  - 通用文本提取、参数校验、会话辅助函数
 - `packages/codex`
-  - 放 Codex backend 的 ACP adapter
-  - 只关心 Codex 协议映射和会话逻辑
+  - Codex backend 的 ACP adapter
 - `packages/claude`
-  - 放 Claude backend 的 ACP adapter
-  - 只关心 Claude 协议映射和会话逻辑
+  - Claude backend 的 ACP adapter
 
-不包含 `cursor`。
+这里不包含 `cursor`。
 
-原因很简单：Cursor CLI 自己就能直接跑 `agent acp`，不需要再保留一层透明 proxy。
+原因很直接：Cursor CLI 自己就能直接跑 `agent acp`，不需要额外 proxy。
 
-## 当前状态
+## 快速使用
 
-- `shared` / `codex` / `claude` 代码已经从主仓复制到这里
-- 主仓后续只保留 ACP client 和回调边界
-- 这里暂时还是本地迁移目录，不做发布
+先跑测试：
 
-## 建议迁移顺序
+```bash
+npm test
+```
 
-1. 先把 `shared` 的公共层抽过来。
-2. 再迁 `codex`。
-3. 最后迁 `claude`。
+直接启动 Codex adapter：
 
-这样做的原因很简单：先把公共层固定住，后面两个 adapter 才不会各自带一份重复代码。
+```bash
+node ./packages/codex/src/index.mjs
+```
+
+直接启动 Claude adapter：
+
+```bash
+node ./packages/claude/src/index.mjs
+```
+
+## 在 MisterMorph 里接入
+
+如果这个仓库和 MisterMorph 分开放，MisterMorph 里的 ACP profile 直接指向这里的入口文件。
+
+Codex 示例：
+
+```yaml
+acp:
+  agents:
+    - name: "codex"
+      command: "node"
+      args: ["<path-to-mistermorph-acp-adapters>/packages/codex/src/index.mjs"]
+      env: {}
+      cwd: "."
+      read_roots: ["."]
+      write_roots: ["."]
+      session_options:
+        approval_policy: "never"
+```
+
+Claude 示例：
+
+```yaml
+acp:
+  agents:
+    - name: "claude"
+      command: "node"
+      args: ["<path-to-mistermorph-acp-adapters>/packages/claude/src/index.mjs"]
+      env: {}
+      cwd: "."
+      read_roots: ["."]
+      write_roots: ["."]
+      session_options:
+        permission_mode: "dontAsk"
+        allowed_tools: ["Read", "Edit", "Write", "Bash", "Glob", "Grep"]
+```
+
+## 目录结构
+
+- `packages/shared`
+  - 共享实现
+- `packages/codex`
+  - Codex adapter
+- `packages/claude`
+  - Claude adapter
+
+## 现在不做的事
+
+- 不包含 MCP passthrough
+- 不做 session 持久化
+- 不做交互式 approval UI
+
+## 许可
+
+仓库沿用 Apache-2.0。

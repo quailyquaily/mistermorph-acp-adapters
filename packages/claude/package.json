@@ -1,0 +1,23 @@
+{
+  "name": "@archkk/acp-claude",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "description": "ACP adapter for Claude Code print mode",
+  "bin": {
+    "archkk-acp-claude": "./dist/index.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "node ../../tools/build-package.mjs claude",
+    "test": "node --test"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

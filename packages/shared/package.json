@@ -1,0 +1,14 @@
+{
+  "name": "@archkk/acp-shared",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared ACP stdio server helpers for MisterMorph adapters",
+  "exports": {
+    "./lib": "./src/lib.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
