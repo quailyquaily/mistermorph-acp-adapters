@@ -1,27 +1,56 @@
-# MisterMorph ACP Codex Adapter
+# `@archkk/acp-codex`
 
-This package exposes an ACP `stdio` adapter for Codex.
+This package provides an ACP `stdio` adapter for Codex.
 
-Current shape:
+The adapter talks to the local `codex app-server` backend and exposes the ACP methods needed by MisterMorph.
 
-- transport: `stdio`
-- ACP methods:
-  - `initialize`
-  - `authenticate` (no-op)
-  - `session/new`
-  - `session/set_config_option`
-  - `session/prompt`
-  - `session/cancel`
-- backend: `codex app-server`
+## Scope
 
-Current limits:
+Current transport:
 
-- no session persistence
-- no MCP passthrough
-- no interactive approval flow
-- default `approval_policy` is `never`
+- `stdio`
 
-Run it directly:
+Current ACP methods:
+
+- `initialize`
+- `authenticate` as a no-op
+- `session/new`
+- `session/set_config_option`
+- `session/prompt`
+- `session/cancel`
+
+Backend:
+
+- `codex app-server`
+
+## Current Limits
+
+- No session persistence
+- No MCP passthrough
+- No interactive approval UI
+- Default `approval_policy` is `never`
+
+## Requirements
+
+- Node.js `>= 20`
+- A working `codex` CLI in `PATH`, unless you override it with `MISTERMORPH_CODEX_COMMAND`
+
+## Usage
+
+Run without installing permanently:
+
+```bash
+npx -y @archkk/acp-codex
+```
+
+Install globally:
+
+```bash
+npm i -g @archkk/acp-codex
+archkk-acp-codex
+```
+
+Run from the repository source:
 
 ```bash
 node ./packages/codex/src/index.mjs
@@ -33,7 +62,25 @@ Or from the repository root:
 npm run run:codex
 ```
 
-Example ACP profile:
+## ACP Profile Example
+
+Using `npx`:
+
+```yaml
+acp:
+  agents:
+    - name: "codex"
+      command: "npx"
+      args: ["-y", "@archkk/acp-codex"]
+      env: {}
+      cwd: "."
+      read_roots: ["."]
+      write_roots: ["."]
+      session_options:
+        approval_policy: "never"
+```
+
+Using the repository source:
 
 ```yaml
 acp:
@@ -49,17 +96,35 @@ acp:
         approval_policy: "never"
 ```
 
-Optional environment variables:
+## Environment Variables
 
 - `MISTERMORPH_CODEX_COMMAND`
-  - override backend executable, default `codex`
+  - Overrides the backend executable. Default: `codex`
 - `MISTERMORPH_CODEX_ARGS`
-  - extra backend args, whitespace-split, appended after `app-server`
+  - Extra backend args. They are split on whitespace and appended after `app-server`
 - `MISTERMORPH_CODEX_AUTO_APPROVE`
-  - when set to `1`, auto-accept Codex command/file approval requests for the session
+  - When set to `1`, auto-accepts Codex command and file approval requests for the session
 
-Test:
+## Development
+
+Run the package test from this directory:
+
+```bash
+npm test
+```
+
+Or from the repository root:
 
 ```bash
 npm run test:codex
 ```
+
+## Publishing
+
+Publish from the repository root:
+
+```bash
+npm publish --workspace packages/codex --access public
+```
+
+The package `prepack` step builds `dist/` and bundles the shared workspace code into the published output.

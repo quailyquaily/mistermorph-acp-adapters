@@ -1,27 +1,56 @@
-# MisterMorph ACP Claude Adapter
+# `@archkk/acp-claude`
 
-This package exposes an ACP `stdio` adapter for Claude Code.
+This package provides an ACP `stdio` adapter for Claude Code.
 
-Current shape:
+The adapter talks to the local Claude Code CLI in print mode and exposes the ACP methods needed by MisterMorph.
 
-- transport: `stdio`
-- ACP methods:
-  - `initialize`
-  - `authenticate` (no-op)
-  - `session/new`
-  - `session/set_config_option`
-  - `session/prompt`
-  - `session/cancel`
-- backend: `claude -p --output-format stream-json`
+## Scope
 
-Current limits:
+Current transport:
 
-- no session persistence
-- no MCP passthrough
-- no interactive approval flow
-- the adapter does not bridge Claude tool calls back into ACP file or terminal callbacks
+- `stdio`
 
-Run it directly:
+Current ACP methods:
+
+- `initialize`
+- `authenticate` as a no-op
+- `session/new`
+- `session/set_config_option`
+- `session/prompt`
+- `session/cancel`
+
+Backend:
+
+- `claude -p --output-format stream-json`
+
+## Current Limits
+
+- No session persistence
+- No MCP passthrough
+- No interactive approval UI
+- Claude tool calls are not bridged back into ACP file or terminal callbacks
+
+## Requirements
+
+- Node.js `>= 20`
+- A working `claude` CLI in `PATH`, unless you override it with `MISTERMORPH_CLAUDE_COMMAND`
+
+## Usage
+
+Run without installing permanently:
+
+```bash
+npx -y @archkk/acp-claude
+```
+
+Install globally:
+
+```bash
+npm i -g @archkk/acp-claude
+archkk-acp-claude
+```
+
+Run from the repository source:
 
 ```bash
 node ./packages/claude/src/index.mjs
@@ -33,7 +62,26 @@ Or from the repository root:
 npm run run:claude
 ```
 
-Example ACP profile:
+## ACP Profile Example
+
+Using `npx`:
+
+```yaml
+acp:
+  agents:
+    - name: "claude"
+      command: "npx"
+      args: ["-y", "@archkk/acp-claude"]
+      env: {}
+      cwd: "."
+      read_roots: ["."]
+      write_roots: ["."]
+      session_options:
+        permission_mode: "dontAsk"
+        allowed_tools: ["Read", "Edit", "Write", "Bash", "Glob", "Grep"]
+```
+
+Using the repository source:
 
 ```yaml
 acp:
@@ -50,20 +98,39 @@ acp:
         allowed_tools: ["Read", "Edit", "Write", "Bash", "Glob", "Grep"]
 ```
 
-Notes:
+## Notes
 
-- `bare: true` is optional, but it is not safe as a default when you rely on Claude.ai login.
-- Claude Code bare mode skips OAuth and keychain reads, so Claude.ai login usually requires `bare: false`.
+- `bare: true` is optional
+- `bare: false` is the safer default when you rely on Claude.ai login
+- Claude Code bare mode skips OAuth and keychain reads
 
-Optional environment variables:
+## Environment Variables
 
 - `MISTERMORPH_CLAUDE_COMMAND`
-  - override backend executable, default `claude`
+  - Overrides the backend executable. Default: `claude`
 - `MISTERMORPH_CLAUDE_ARGS`
-  - extra backend args, whitespace-split, inserted before print-mode flags
+  - Extra backend args. They are split on whitespace and inserted before the print-mode flags
 
-Test:
+## Development
+
+Run the package test from this directory:
+
+```bash
+npm test
+```
+
+Or from the repository root:
 
 ```bash
 npm run test:claude
 ```
+
+## Publishing
+
+Publish from the repository root:
+
+```bash
+npm publish --workspace packages/claude --access public
+```
+
+The package `prepack` step builds `dist/` and bundles the shared workspace code into the published output.

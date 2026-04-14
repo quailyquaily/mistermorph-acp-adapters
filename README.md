@@ -1,72 +1,92 @@
 # MisterMorph ACP Adapters
 
-这个仓库放 MisterMorph 拆出来的 ACP adapter。
+This repository contains ACP adapters extracted from MisterMorph.
 
-当前范围很小：
+It currently publishes two packages:
 
-- `packages/shared`
-  - ACP `stdio` server 基座
-  - JSON-RPC 公共处理
-  - 通用文本提取、参数校验、会话辅助函数
+- `@archkk/acp-codex`
+- `@archkk/acp-claude`
+
+## Scope
+
+This repository does three things:
+
+- Provides an ACP `stdio` adapter for Codex
+- Provides an ACP `stdio` adapter for Claude Code
+- Maintains the small shared code layer used by both adapters
+
+## Requirements
+
+- Node.js `>= 20`
+- npm workspace support for local development
+
+## Repository Layout
+
 - `packages/codex`
-  - Codex backend 的 ACP adapter
+  - Codex adapter
 - `packages/claude`
-  - Claude backend 的 ACP adapter
+  - Claude Code adapter
+- `packages/shared`
+  - Internal shared code used by both adapters
+- `tools/build-package.mjs`
+  - Build script that bundles shared code into each published package
 
-这里不包含 `cursor`。
+## Local Development
 
-原因很直接：Cursor CLI 自己就能直接跑 `agent acp`，不需要额外 proxy。
-
-## 快速使用
-
-先跑测试：
+Run tests:
 
 ```bash
 npm test
 ```
 
-直接启动 Codex adapter：
+Run the source entry points directly:
 
 ```bash
 node ./packages/codex/src/index.mjs
-```
-
-直接启动 Claude adapter：
-
-```bash
 node ./packages/claude/src/index.mjs
 ```
 
-## 发布
-
-发布到 npm 的包是：
-
-- `@archkk/acp-codex`
-- `@archkk/acp-claude`
-
-在仓库根目录执行：
+Or use the root scripts:
 
 ```bash
-npm publish --workspace packages/codex --access public
-npm publish --workspace packages/claude --access public
+npm run run:codex
+npm run run:claude
 ```
 
-这两个命令会自动触发各自 package 的 `prepack`，把共享代码打进发布产物，不需要手工先跑 build。
+## Published Packages
 
-如果当前版本已经发布过，先改版本号，再执行发布。
+Run a package without installing it permanently:
 
-## 在 MisterMorph 里接入
+```bash
+npx -y @archkk/acp-codex
+npx -y @archkk/acp-claude
+```
 
-如果这个仓库和 MisterMorph 分开放，MisterMorph 里的 ACP profile 直接指向这里的入口文件。
+Install both packages globally:
 
-Codex 示例：
+```bash
+npm i -g @archkk/acp-codex @archkk/acp-claude
+```
+
+The installed command names are:
+
+```bash
+archkk-acp-codex
+archkk-acp-claude
+```
+
+## MisterMorph Integration
+
+If you want to use the published npm packages, an ACP profile can look like this.
+
+Codex:
 
 ```yaml
 acp:
   agents:
     - name: "codex"
-      command: "node"
-      args: ["<path-to-mistermorph-acp-adapters>/packages/codex/src/index.mjs"]
+      command: "npx"
+      args: ["-y", "@archkk/acp-codex"]
       env: {}
       cwd: "."
       read_roots: ["."]
@@ -75,14 +95,14 @@ acp:
         approval_policy: "never"
 ```
 
-Claude 示例：
+Claude:
 
 ```yaml
 acp:
   agents:
     - name: "claude"
-      command: "node"
-      args: ["<path-to-mistermorph-acp-adapters>/packages/claude/src/index.mjs"]
+      command: "npx"
+      args: ["-y", "@archkk/acp-claude"]
       env: {}
       cwd: "."
       read_roots: ["."]
@@ -92,21 +112,66 @@ acp:
         allowed_tools: ["Read", "Edit", "Write", "Bash", "Glob", "Grep"]
 ```
 
-## 目录结构
+For local integration work, you can also point MisterMorph at the source entry points in this repository.
 
-- `packages/shared`
-  - 共享实现
-- `packages/codex`
-  - Codex adapter
-- `packages/claude`
-  - Claude adapter
+Codex:
 
-## 现在不做的事
+```yaml
+acp:
+  agents:
+    - name: "codex"
+      command: "node"
+      args: ["./packages/codex/src/index.mjs"]
+      env: {}
+      cwd: "."
+      read_roots: ["."]
+      write_roots: ["."]
+      session_options:
+        approval_policy: "never"
+```
 
-- 不包含 MCP passthrough
-- 不做 session 持久化
-- 不做交互式 approval UI
+Claude:
 
-## 许可
+```yaml
+acp:
+  agents:
+    - name: "claude"
+      command: "node"
+      args: ["./packages/claude/src/index.mjs"]
+      env: {}
+      cwd: "."
+      read_roots: ["."]
+      write_roots: ["."]
+      session_options:
+        permission_mode: "dontAsk"
+        allowed_tools: ["Read", "Edit", "Write", "Bash", "Glob", "Grep"]
+```
 
-仓库沿用 Apache-2.0。
+## Publishing
+
+Only these two packages are published:
+
+- `@archkk/acp-codex`
+- `@archkk/acp-claude`
+
+From the repository root, run:
+
+```bash
+npm publish --workspace packages/codex --access public
+npm publish --workspace packages/claude --access public
+```
+
+Each command automatically runs that package's `prepack` script.
+
+`prepack` does two things:
+
+- Generates `dist/`
+- Copies the shared code from `packages/shared` into the package output
+
+Because of that, `packages/shared` does not need to be published.
+
+If the current version has already been published, bump the version before publishing again.
+
+## License
+
+Apache-2.0
